@@ -1,10 +1,11 @@
 package com.sece.microsave.controller;
 
 import com.sece.microsave.entity.Repayment;
+import com.sece.microsave.dto.RepaymentRequest;
+import com.sece.microsave.dto.RepaymentResponse;
 import com.sece.microsave.service.RepaymentService;
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,7 +27,7 @@ public class RepaymentController {
 
 	@PostMapping
 	public ResponseEntity<RepaymentResponse> recordRepayment(@PathVariable Long loanId,
-			@RequestBody RepaymentRequest request) {
+			@Valid @RequestBody RepaymentRequest request) {
 		Repayment repayment = repaymentService.recordRepayment(loanId, request.amount(), request.repaymentDate());
 		return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(repayment));
 	}
@@ -41,9 +42,4 @@ public class RepaymentController {
 				repayment.getLoan().getId());
 	}
 
-	public record RepaymentRequest(BigDecimal amount, LocalDate repaymentDate) {
-	}
-
-	public record RepaymentResponse(Long id, BigDecimal amount, LocalDate repaymentDate, Long loanId) {
-	}
 }

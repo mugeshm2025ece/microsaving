@@ -1,8 +1,11 @@
 package com.sece.microsave.controller;
 
 import com.sece.microsave.entity.Member;
+import com.sece.microsave.dto.MemberRequest;
+import com.sece.microsave.dto.MemberResponse;
 import com.sece.microsave.service.MemberService;
 import java.util.List;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,7 +27,7 @@ public class MemberController {
 
 	@PostMapping("/groups/{groupId}/members")
 	public ResponseEntity<MemberResponse> addMember(@PathVariable Long groupId,
-			@RequestBody MemberRequest request) {
+			@Valid @RequestBody MemberRequest request) {
 		Member member = memberService.addMember(groupId, request.memberName());
 		return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(member));
 	}
@@ -43,9 +46,4 @@ public class MemberController {
 		return new MemberResponse(member.getId(), member.getMemberName(), member.getGroup().getId());
 	}
 
-	public record MemberRequest(String memberName) {
-	}
-
-	public record MemberResponse(Long id, String memberName, Long groupId) {
-	}
 }

@@ -1,11 +1,12 @@
 package com.sece.microsave.controller;
 
 import com.sece.microsave.entity.Loan;
+import com.sece.microsave.dto.LoanRequest;
+import com.sece.microsave.dto.LoanResponse;
 import com.sece.microsave.service.GroupService;
 import com.sece.microsave.service.LoanService;
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,7 +30,7 @@ public class LoanController {
 
 	@PostMapping("/members/{memberId}/loans")
 	public ResponseEntity<LoanResponse> createLoan(@PathVariable Long memberId,
-			@RequestBody LoanRequest request) {
+			@Valid @RequestBody LoanRequest request) {
 		Loan loan = loanService.createLoan(memberId, request.amount(), request.loanDate());
 		return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(loan));
 	}
@@ -54,10 +55,4 @@ public class LoanController {
 				loan.getMember().getId(), loan.getGroup().getId());
 	}
 
-	public record LoanRequest(BigDecimal amount, LocalDate loanDate) {
-	}
-
-	public record LoanResponse(Long id, BigDecimal amount, LocalDate loanDate, String loanStatus,
-			Long memberId, Long groupId) {
-	}
 }

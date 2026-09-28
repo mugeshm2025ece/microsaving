@@ -1,8 +1,11 @@
 package com.sece.microsave.controller;
 
 import com.sece.microsave.entity.Group;
+import com.sece.microsave.dto.GroupRequest;
+import com.sece.microsave.dto.GroupResponse;
 import com.sece.microsave.service.GroupService;
 import java.util.List;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,7 +26,7 @@ public class GroupController {
 	}
 
 	@PostMapping
-	public ResponseEntity<GroupResponse> createGroup(@RequestBody GroupRequest request) {
+	public ResponseEntity<GroupResponse> createGroup(@Valid @RequestBody GroupRequest request) {
 		Group group = groupService.createGroup(request.groupName());
 		return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(group));
 	}
@@ -42,9 +45,4 @@ public class GroupController {
 		return new GroupResponse(group.getId(), group.getGroupName());
 	}
 
-	public record GroupRequest(String groupName) {
-	}
-
-	public record GroupResponse(Long id, String groupName) {
-	}
 }

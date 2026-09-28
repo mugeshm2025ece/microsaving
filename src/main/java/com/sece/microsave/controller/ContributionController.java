@@ -1,10 +1,11 @@
 package com.sece.microsave.controller;
 
 import com.sece.microsave.entity.Contribution;
+import com.sece.microsave.dto.ContributionRequest;
+import com.sece.microsave.dto.ContributionResponse;
 import com.sece.microsave.service.ContributionService;
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,7 +27,7 @@ public class ContributionController {
 
 	@PostMapping("/members/{memberId}/contributions")
 	public ResponseEntity<ContributionResponse> recordContribution(@PathVariable Long memberId,
-			@RequestBody ContributionRequest request) {
+			@Valid @RequestBody ContributionRequest request) {
 		Contribution contribution = contributionService.recordContribution(memberId, request.amount(),
 				request.contributionDate());
 		return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(contribution));
@@ -47,9 +48,4 @@ public class ContributionController {
 				contribution.getContributionDate(), contribution.getMember().getId());
 	}
 
-	public record ContributionRequest(BigDecimal amount, LocalDate contributionDate) {
-	}
-
-	public record ContributionResponse(Long id, BigDecimal amount, LocalDate contributionDate, Long memberId) {
-	}
 }
