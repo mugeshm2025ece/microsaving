@@ -4,6 +4,8 @@ import com.sece.microsave.entity.Contribution;
 import com.sece.microsave.entity.Group;
 import com.sece.microsave.entity.Loan;
 import com.sece.microsave.entity.Member;
+import com.sece.microsave.exception.GroupNotFoundException;
+import com.sece.microsave.exception.InvalidRequestException;
 import com.sece.microsave.repository.ContributionRepository;
 import com.sece.microsave.repository.GroupRepository;
 import com.sece.microsave.repository.LoanRepository;
@@ -36,7 +38,7 @@ public class GroupService {
 	@Transactional
 	public Group createGroup(String groupName) {
 		if (groupName == null || groupName.isBlank()) {
-			throw new IllegalArgumentException("Group name is required.");
+			throw new InvalidRequestException("Group name is required.");
 		}
 		return groupRepository.save(new Group(groupName));
 	}
@@ -44,7 +46,7 @@ public class GroupService {
 	@Transactional(readOnly = true)
 	public Group getGroupById(Long groupId) {
 		return groupRepository.findById(groupId)
-				.orElseThrow(() -> new IllegalArgumentException("Group not found."));
+				.orElseThrow(() -> new GroupNotFoundException("Group not found."));
 	}
 
 	@Transactional(readOnly = true)

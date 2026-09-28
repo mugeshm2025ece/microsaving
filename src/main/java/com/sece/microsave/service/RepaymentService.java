@@ -2,6 +2,8 @@ package com.sece.microsave.service;
 
 import com.sece.microsave.entity.Loan;
 import com.sece.microsave.entity.Repayment;
+import com.sece.microsave.exception.InvalidRepaymentException;
+import com.sece.microsave.exception.LoanNotFoundException;
 import com.sece.microsave.repository.LoanRepository;
 import com.sece.microsave.repository.RepaymentRepository;
 import java.math.BigDecimal;
@@ -24,17 +26,17 @@ public class RepaymentService {
 	@Transactional
 	public Repayment recordRepayment(Long loanId, BigDecimal amount, LocalDate repaymentDate) {
 		if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
-			throw new IllegalArgumentException("Repayment amount must be greater than zero.");
+			throw new InvalidRepaymentException("Repayment amount must be greater than zero.");
 		}
 		if (repaymentDate == null) {
-			throw new IllegalArgumentException("Repayment date is required.");
+			throw new InvalidRepaymentException("Repayment date is required.");
 		}
 
 		Loan loan = loanRepository.findById(loanId)
-				.orElseThrow(() -> new IllegalArgumentException("Loan not found."));
+				.orElseThrow(() -> new LoanNotFoundException("Loan not found."));
 		BigDecimal outstandingAmount = calculateOutstandingAmount(loan);
 		if (amount.compareTo(outstandingAmount) > 0) {
-			throw new IllegalStateException("Repayment cannot be greater than the outstanding loan amount.");
+			throw new InvalidRepaymentException("Repayment cannot be greater than the outstanding loan amount.");
 		}
 
 		Repayment repayment = repaymentRepository.save(new Repayment(amount, repaymentDate, loan));
@@ -48,14 +50,14 @@ public class RepaymentService {
 	@Transactional(readOnly = true)
 	public BigDecimal getOutstandingAmount(Long loanId) {
 		Loan loan = loanRepository.findById(loanId)
-				.orElseThrow(() -> new IllegalArgumentException("Loan not found."));
+				.orElseThrow(() -> new LoanNotFoundException("Loan not found."));
 		return calculateOutstandingAmount(loan);
 	}
 
 	@Transactional(readOnly = true)
 	public List<Repayment> getRepaymentsByLoan(Long loanId) {
 		Loan loan = loanRepository.findById(loanId)
-				.orElseThrow(() -> new IllegalArgumentException("Loan not found."));
+				.orElseThrow(() -> new LoanNotFoundException("Loan not found."));
 		return repaymentRepository.findByLoan(loan);
 	}
 

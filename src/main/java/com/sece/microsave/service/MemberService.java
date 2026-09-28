@@ -2,6 +2,9 @@ package com.sece.microsave.service;
 
 import com.sece.microsave.entity.Group;
 import com.sece.microsave.entity.Member;
+import com.sece.microsave.exception.GroupNotFoundException;
+import com.sece.microsave.exception.InvalidRequestException;
+import com.sece.microsave.exception.MemberNotFoundException;
 import com.sece.microsave.repository.GroupRepository;
 import com.sece.microsave.repository.MemberRepository;
 import java.util.List;
@@ -22,23 +25,23 @@ public class MemberService {
 	@Transactional
 	public Member addMember(Long groupId, String memberName) {
 		if (memberName == null || memberName.isBlank()) {
-			throw new IllegalArgumentException("Member name is required.");
+			throw new InvalidRequestException("Member name is required.");
 		}
 		Group group = groupRepository.findById(groupId)
-				.orElseThrow(() -> new IllegalArgumentException("Group not found."));
+				.orElseThrow(() -> new GroupNotFoundException("Group not found."));
 		return memberRepository.save(new Member(memberName, group));
 	}
 
 	@Transactional(readOnly = true)
 	public Member getMemberById(Long memberId) {
 		return memberRepository.findById(memberId)
-				.orElseThrow(() -> new IllegalArgumentException("Member not found."));
+				.orElseThrow(() -> new MemberNotFoundException("Member not found."));
 	}
 
 	@Transactional(readOnly = true)
 	public List<Member> getMembersByGroup(Long groupId) {
 		Group group = groupRepository.findById(groupId)
-				.orElseThrow(() -> new IllegalArgumentException("Group not found."));
+				.orElseThrow(() -> new GroupNotFoundException("Group not found."));
 		return memberRepository.findByGroup(group);
 	}
 }

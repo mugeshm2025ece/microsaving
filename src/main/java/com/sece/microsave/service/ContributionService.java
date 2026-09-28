@@ -2,6 +2,9 @@ package com.sece.microsave.service;
 
 import com.sece.microsave.entity.Contribution;
 import com.sece.microsave.entity.Member;
+import com.sece.microsave.exception.ContributionNotFoundException;
+import com.sece.microsave.exception.InvalidRequestException;
+import com.sece.microsave.exception.MemberNotFoundException;
 import com.sece.microsave.repository.ContributionRepository;
 import com.sece.microsave.repository.MemberRepository;
 import java.math.BigDecimal;
@@ -24,26 +27,26 @@ public class ContributionService {
 	@Transactional
 	public Contribution recordContribution(Long memberId, BigDecimal amount, LocalDate contributionDate) {
 		if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
-			throw new IllegalArgumentException("Contribution amount must be greater than zero.");
+			throw new InvalidRequestException("Contribution amount must be greater than zero.");
 		}
 		if (contributionDate == null) {
-			throw new IllegalArgumentException("Contribution date is required.");
+			throw new InvalidRequestException("Contribution date is required.");
 		}
 		Member member = memberRepository.findById(memberId)
-				.orElseThrow(() -> new IllegalArgumentException("Member not found."));
+				.orElseThrow(() -> new MemberNotFoundException("Member not found."));
 		return contributionRepository.save(new Contribution(amount, contributionDate, member));
 	}
 
 	@Transactional(readOnly = true)
 	public List<Contribution> getContributionsByMember(Long memberId) {
 		Member member = memberRepository.findById(memberId)
-				.orElseThrow(() -> new IllegalArgumentException("Member not found."));
+				.orElseThrow(() -> new MemberNotFoundException("Member not found."));
 		return contributionRepository.findByMember(member);
 	}
 
 	@Transactional(readOnly = true)
 	public Contribution getContributionById(Long contributionId) {
 		return contributionRepository.findById(contributionId)
-				.orElseThrow(() -> new IllegalArgumentException("Contribution not found."));
+				.orElseThrow(() -> new ContributionNotFoundException("Contribution not found."));
 	}
 }

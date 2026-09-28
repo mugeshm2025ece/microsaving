@@ -2,6 +2,11 @@ package com.sece.microsave.service;
 
 import com.sece.microsave.entity.Loan;
 import com.sece.microsave.entity.Member;
+import com.sece.microsave.exception.InsufficientGroupBalanceException;
+import com.sece.microsave.exception.InvalidRequestException;
+import com.sece.microsave.exception.LoanNotFoundException;
+import com.sece.microsave.exception.MemberNotFoundException;
+import com.sece.microsave.exception.OutstandingLoanException;
 import com.sece.microsave.repository.LoanRepository;
 import com.sece.microsave.repository.MemberRepository;
 import java.math.BigDecimal;
@@ -29,23 +34,23 @@ public class LoanService {
 	@Transactional
 	public Loan createLoan(Long memberId, BigDecimal amount, LocalDate loanDate) {
 		if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
-			throw new IllegalArgumentException("Loan amount must be greater than zero.");
+			throw new InvalidRequestException("Loan amount must be greater than zero.");
 		}
 		if (loanDate == null) {
-			throw new IllegalArgumentException("Loan date is required.");
+			throw new InvalidRequestException("Loan date is required.");
 		}
 
 		Member member = memberRepository.findById(memberId)
-				.orElseThrow(() -> new IllegalArgumentException("Member not found."));
+				.orElseThrow(() -> new MemberNotFoundException("Member not found."));
 		for (Loan existingLoan : loanRepository.findByMember(member)) {
 			if (repaymentService.getOutstandingAmount(existingLoan.getId()).compareTo(BigDecimal.ZERO) > 0) {
-				throw new IllegalStateException("Member already has an outstanding loan.");
+				throw new OutstandingLoanException("Member already has an outstanding loan.");
 			}
 		}
 
 		BigDecimal availablePool = groupService.getAvailablePool(member.getGroup().getId());
 		if (amount.compareTo(availablePool) > 0) {
-			throw new IllegalStateException("Group does not have enough available money.");
+			throw new InsufficientGroupBalanceException("Group does not have enough available money.");
 		}
 
 		Loan loan = new Loan(amount, loanDate, "OUTSTANDING", member, member.getGroup());
@@ -55,13 +60,13 @@ public class LoanService {
 	@Transactional(readOnly = true)
 	public Loan getLoanById(Long loanId) {
 		return loanRepository.findById(loanId)
-				.orElseThrow(() -> new IllegalArgumentException("Loan not found."));
+				.orElseThrow(() -> new LoanNotFoundException("Loan not found."));
 	}
 
 	@Transactional(readOnly = true)
 	public List<Loan> getLoansByMember(Long memberId) {
 		Member member = memberRepository.findById(memberId)
-				.orElseThrow(() -> new IllegalArgumentException("Member not found."));
+				.orElseThrow(() -> new MemberNotFoundException("Member not found."));
 		return loanRepository.findByMember(member);
 	}
 
