@@ -1,4 +1,5 @@
 import { request } from "./api.js";
+import { onPage } from "./navigation.js";
 
 const state = {
   groups: [],
@@ -11,12 +12,6 @@ const state = {
 const summaryElements = Object.fromEntries(
   [...document.querySelectorAll("[data-summary]")].map(element => [element.dataset.summary, element])
 );
-const actionDialog = document.querySelector("#action-dialog");
-const actionForm = document.querySelector("#action-form");
-const formFields = document.querySelector("#form-fields");
-const formError = document.querySelector("#form-error");
-const notice = document.querySelector("#dashboard-notice");
-
 const currencyFormatter = new Intl.NumberFormat(undefined, {
   style: "currency",
   currency: "INR",
@@ -48,26 +43,11 @@ function escapeHtml(value) {
   })[character]);
 }
 
-function localDateValue() {
-  const now = new Date();
-  const offset = now.getTimezoneOffset();
-  return new Date(now.getTime() - offset * 60_000).toISOString().slice(0, 10);
-}
-
 function setConnection(status, label) {
   const indicator = document.querySelector("#connection-indicator");
   indicator.classList.toggle("is-connected", status === "connected");
   indicator.classList.toggle("is-error", status === "error");
   document.querySelector("#connection-label").textContent = label;
-}
-
-let noticeTimeout;
-function showNotice(message, isError = false) {
-  notice.textContent = message;
-  notice.classList.toggle("is-error", isError);
-  notice.hidden = false;
-  clearTimeout(noticeTimeout);
-  noticeTimeout = setTimeout(() => { notice.hidden = true; }, 4200);
 }
 
 function showLoadError(message) {
@@ -190,115 +170,10 @@ function renderActivity() {
     </article>`).join("");
 }
 
-function optionsFor(items, idKey, labelFor, prompt) {
-  const options = items.map(item => `<option value="${item[idKey]}">${escapeHtml(labelFor(item))}</option>`).join("");
-  return `<option value="">${escapeHtml(prompt)}</option>${options}`;
-}
-
-function fieldMarkup({ name, label, type = "text", required = true, value = "", options = "" }) {
-  const requiredAttribute = required ? "required" : "";
-  if (type === "select") {
-    return `<div class="form-field"><label for="field-${name}">${label}</label><select id="field-${name}" name="${name}" ${requiredAttribute}>${options}</select></div>`;
-  }
-  return `<div class="form-field"><label for="field-${name}">${label}</label><input id="field-${name}" name="${name}" type="${type}" ${type === "number" ? 'min="0.01" step="0.01"' : ""} value="${value}" ${requiredAttribute}></div>`;
-}
-
-function getActionConfig(action) {
-  const memberOptions = optionsFor(state.members, "id", member => `${member.memberName} · group ${member.groupId}`, "Choose a member");
-  const groupOptions = optionsFor(state.groups, "id", group => group.groupName, "Choose a group");
-  const loanOptions = optionsFor(state.loans, "id", loan => {
-    const memberName = state.members.find(member => member.id === loan.memberId)?.memberName || `Member ${loan.memberId}`;
-    return `${memberName} · ${formatCurrency(getOutstandingAmount(loan))} outstanding`;
-  }, "Choose a loan");
-
-  const configs = {
-    "add-group": {
-      title: "Add a group", url: "/api/groups", fields: [
-        { name: "groupName", label: "Group name" }
-      ], body: values => ({ groupName: values.groupName })
-    },
-    "add-member": {
-      title: "Add a member", fields: [
-        { name: "groupId", label: "Savings group", type: "select", options: groupOptions },
-        { name: "memberName", label: "Member name" }
-      ], url: values => `/api/groups/${values.groupId}/members`, body: values => ({ memberName: values.memberName })
-    },
-    "add-contribution": {
-      title: "Record a contribution", fields: [
-        { name: "memberId", label: "Member", type: "select", options: memberOptions },
-        { name: "amount", label: "Amount (INR)", type: "number" },
-        { name: "contributionDate", label: "Contribution date", type: "date", value: localDateValue() }
-      ], url: values => `/api/members/${values.memberId}/contributions`, body: values => ({ amount: Number(values.amount), contributionDate: values.contributionDate })
-    },
-    "create-loan": {
-      title: "Create a loan", fields: [
-        { name: "memberId", label: "Member", type: "select", options: memberOptions },
-        { name: "amount", label: "Loan amount (INR)", type: "number" },
-        { name: "loanDate", label: "Loan date", type: "date", value: localDateValue() }
-      ], url: values => `/api/members/${values.memberId}/loans`, body: values => ({ amount: Number(values.amount), loanDate: values.loanDate })
-    },
-    "record-repayment": {
-      title: "Record a repayment", fields: [
-        { name: "loanId", label: "Loan", type: "select", options: loanOptions },
-        { name: "amount", label: "Repayment amount (INR)", type: "number" },
-        { name: "repaymentDate", label: "Repayment date", type: "date", value: localDateValue() }
-      ], url: values => `/api/loans/${values.loanId}/repayments`, body: values => ({ amount: Number(values.amount), repaymentDate: values.repaymentDate })
-    }
-  };
-  return configs[action];
-}
-
-function openAction(action) {
-  const config = getActionConfig(action);
-  if (!config) return;
-  if (action === "add-member" && state.groups.length === 0) return showNotice("Create a group before adding a member.", true);
-  if (["add-contribution", "create-loan"].includes(action) && state.members.length === 0) return showNotice("Add a member before continuing.", true);
-  if (action === "record-repayment" && state.loans.length === 0) return showNotice("Create a loan before recording a repayment.", true);
-
-  actionForm.dataset.action = action;
-  document.querySelector("#dialog-title").textContent = config.title;
-  document.querySelector("#form-fields").innerHTML = config.fields.map(fieldMarkup).join("");
-  document.querySelector("#form-error").hidden = true;
-  document.querySelector("#submit-dialog").disabled = false;
-  actionDialog.showModal();
-}
-
-document.querySelectorAll("[data-action]").forEach(element => {
-  element.addEventListener("click", event => {
-    event.preventDefault();
-    openAction(element.dataset.action);
-  });
-});
-
 document.querySelector("#refresh-dashboard").addEventListener("click", loadDashboard);
-document.querySelector("#close-dialog").addEventListener("click", () => actionDialog.close());
-document.querySelector("#cancel-dialog").addEventListener("click", () => actionDialog.close());
-
-actionForm.addEventListener("submit", async event => {
-  event.preventDefault();
-  const config = getActionConfig(actionForm.dataset.action);
-  const values = Object.fromEntries(new FormData(actionForm));
-  const submitButton = document.querySelector("#submit-dialog");
-  submitButton.disabled = true;
-  formError.hidden = true;
-
-  try {
-    await request(typeof config.url === "function" ? config.url(values) : config.url, {
-      method: "POST",
-      body: JSON.stringify(config.body(values))
-    });
-    actionDialog.close();
-    showNotice(`${config.title} saved successfully.`);
-    await loadDashboard();
-  } catch (error) {
-    formError.textContent = error.message;
-    formError.hidden = false;
-  } finally {
-    submitButton.disabled = false;
-  }
-});
+window.addEventListener("microsave:refresh-dashboard", loadDashboard);
 
 const todayText = dateFormatter.format(new Date());
 document.querySelector("#today-date").textContent = todayText;
 document.querySelector("#welcome-date").textContent = todayText;
-loadDashboard();
+onPage("dashboard", loadDashboard);

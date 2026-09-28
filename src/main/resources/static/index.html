@@ -4,9 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#f4f6f2">
+  <meta name="microsave-api-base-url" content="">
   <title>MicroSave | Dashboard</title>
   <link rel="stylesheet" href="/css/style.css">
   <script type="module" src="/js/app.js"></script>
+  <script type="module" src="/js/groups.js"></script>
+  <script type="module" src="/js/members.js"></script>
+  <script type="module" src="/js/contributions.js"></script>
+  <script type="module" src="/js/loans.js"></script>
+  <script type="module" src="/js/repayments.js"></script>
 </head>
 <body>
   <div class="app-shell">
@@ -19,11 +25,11 @@
         <a class="nav-link is-active" href="#dashboard" aria-current="page">
           <span class="nav-icon" aria-hidden="true">⌂</span> Dashboard
         </a>
-        <a class="nav-link" href="#groups" data-action="add-group"><span class="nav-icon" aria-hidden="true">▤</span> Groups</a>
-        <a class="nav-link" href="#members" data-action="add-member"><span class="nav-icon" aria-hidden="true">♙</span> Members</a>
-        <a class="nav-link" href="#contributions" data-action="add-contribution"><span class="nav-icon" aria-hidden="true">＋</span> Contributions</a>
-        <a class="nav-link" href="#loans" data-action="create-loan"><span class="nav-icon" aria-hidden="true">↗</span> Loans</a>
-        <a class="nav-link" href="#repayments" data-action="record-repayment"><span class="nav-icon" aria-hidden="true">↙</span> Repayments</a>
+        <a class="nav-link" href="#groups"><span class="nav-icon" aria-hidden="true">▤</span> Groups</a>
+        <a class="nav-link" href="#members"><span class="nav-icon" aria-hidden="true">♙</span> Members</a>
+        <a class="nav-link" href="#contributions"><span class="nav-icon" aria-hidden="true">＋</span> Contributions</a>
+        <a class="nav-link" href="#loans"><span class="nav-icon" aria-hidden="true">↗</span> Loans</a>
+        <a class="nav-link" href="#repayments"><span class="nav-icon" aria-hidden="true">↙</span> Repayments</a>
       </nav>
 
       <div class="sidebar-footer">
@@ -32,7 +38,8 @@
       </div>
     </aside>
 
-    <main class="main-content" id="dashboard">
+    <main class="main-content">
+      <div id="dashboard-page">
       <header class="topbar">
         <div>
           <p class="eyebrow">SELF-HELP GROUP MANAGEMENT</p>
@@ -129,24 +136,431 @@
         </div>
       </section>
 
-      <div class="notice" id="dashboard-notice" role="status" aria-live="polite" hidden></div>
+      </div>
+
+      <section class="groups-page" id="groups-page" aria-labelledby="groups-title" hidden>
+        <header class="groups-header">
+          <div>
+            <p class="eyebrow">SAVINGS NETWORK</p>
+            <h1 id="groups-title">Groups</h1>
+            <p class="groups-subtitle">View and manage registered savings groups.</p>
+          </div>
+          <div class="groups-tools">
+            <button class="icon-button" type="button" id="refresh-groups" aria-label="Refresh groups" title="Refresh groups">
+              <span aria-hidden="true">⟳</span>
+            </button>
+            <button class="button button-primary" type="button" id="open-group-form">＋ <span>Add group</span></button>
+          </div>
+        </header>
+
+        <div class="groups-feedback" id="groups-feedback" role="status" aria-live="polite" hidden></div>
+
+        <section class="groups-table-section" aria-labelledby="groups-table-title">
+          <div class="groups-table-heading">
+            <div>
+              <p class="eyebrow">REGISTER</p>
+              <h2 id="groups-table-title">All groups</h2>
+            </div>
+            <span class="groups-count" id="groups-count">Loading</span>
+          </div>
+          <div class="groups-table-scroll">
+            <table class="groups-table">
+              <thead>
+                <tr><th scope="col">Group</th><th scope="col">Group ID</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr>
+              </thead>
+              <tbody id="groups-rows">
+                <tr><td colspan="3" class="table-message">Loading groups…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+
+      <section class="groups-page members-page" id="members-page" aria-labelledby="members-title" hidden>
+        <header class="groups-header">
+          <div>
+            <p class="eyebrow">SAVINGS NETWORK</p>
+            <h1 id="members-title">Members</h1>
+            <p class="groups-subtitle">Browse members across your savings groups.</p>
+          </div>
+          <div class="groups-tools">
+            <button class="icon-button" type="button" id="refresh-members" aria-label="Refresh members" title="Refresh members">
+              <span aria-hidden="true">⟳</span>
+            </button>
+            <button class="button button-primary" type="button" id="open-member-form">＋ <span>Add member</span></button>
+          </div>
+        </header>
+
+        <div class="groups-feedback" id="members-feedback" role="status" aria-live="polite" hidden></div>
+
+        <section class="groups-table-section" aria-labelledby="members-table-title">
+          <div class="groups-table-heading members-table-heading">
+            <div>
+              <p class="eyebrow">DIRECTORY</p>
+              <h2 id="members-table-title">All members</h2>
+            </div>
+            <div class="members-table-tools">
+              <label class="form-field members-filter-field" for="member-group-filter">
+                <span>Group</span>
+                <select id="member-group-filter" aria-label="Filter members by group">
+                  <option value="all">All groups</option>
+                </select>
+              </label>
+              <span class="groups-count" id="members-count">Loading</span>
+            </div>
+          </div>
+          <div class="groups-table-scroll">
+            <table class="groups-table members-table">
+              <thead>
+                <tr><th scope="col">Member</th><th scope="col">Member ID</th><th scope="col">Group</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr>
+              </thead>
+              <tbody id="members-rows">
+                <tr><td colspan="4" class="table-message">Loading members…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+
+      <section class="groups-page contributions-page" id="contributions-page" aria-labelledby="contributions-title" hidden>
+        <header class="groups-header">
+          <div>
+            <p class="eyebrow">SAVINGS NETWORK</p>
+            <h1 id="contributions-title">Contributions</h1>
+            <p class="groups-subtitle">Savings history recorded for your members.</p>
+          </div>
+          <div class="groups-tools">
+            <button class="icon-button" type="button" id="refresh-contributions" aria-label="Refresh contributions" title="Refresh contributions">
+              <span aria-hidden="true">⟳</span>
+            </button>
+            <button class="button button-primary" type="button" id="open-contribution-form">＋ <span>Record contribution</span></button>
+          </div>
+        </header>
+
+        <div class="groups-feedback" id="contributions-feedback" role="status" aria-live="polite" hidden></div>
+
+        <section class="contribution-summary" aria-label="Contribution summary">
+          <article class="contribution-stat">
+            <span>Total contributions</span>
+            <strong id="contributions-total">Loading</strong>
+            <small>Sum of returned contribution records</small>
+          </article>
+          <article class="contribution-stat">
+            <span>Contribution records</span>
+            <strong id="contributions-record-count">--</strong>
+            <small>Recorded savings entries</small>
+          </article>
+          <article class="contribution-stat contribution-member-stat">
+            <label for="contribution-member-summary">Member total</label>
+            <strong id="member-contribution-total">--</strong>
+            <select id="contribution-member-summary" aria-label="Choose a member for their contribution total" disabled>
+              <option value="">No members</option>
+            </select>
+          </article>
+        </section>
+
+        <section class="groups-table-section" aria-labelledby="contribution-history-title">
+          <div class="groups-table-heading">
+            <div>
+              <p class="eyebrow">SAVINGS LEDGER</p>
+              <h2 id="contribution-history-title">Contribution history</h2>
+            </div>
+            <span class="groups-count" id="contribution-history-count">Loading</span>
+          </div>
+          <div class="groups-table-scroll">
+            <table class="groups-table contributions-table">
+              <thead>
+                <tr><th scope="col">Date</th><th scope="col">Member</th><th scope="col">Group</th><th scope="col">Contribution ID</th><th scope="col">Amount</th></tr>
+              </thead>
+              <tbody id="contributions-rows">
+                <tr><td colspan="5" class="table-message">Loading contributions…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+
+      <section class="groups-page loans-page" id="loans-page" aria-labelledby="loans-title" hidden>
+        <header class="groups-header">
+          <div>
+            <p class="eyebrow">SAVINGS NETWORK</p>
+            <h1 id="loans-title">Loans</h1>
+            <p class="groups-subtitle">Review loan records and their backend status.</p>
+          </div>
+          <div class="groups-tools">
+            <button class="icon-button" type="button" id="refresh-loans" aria-label="Refresh loans" title="Refresh loans">
+              <span aria-hidden="true">⟳</span>
+            </button>
+            <button class="button button-primary" type="button" id="open-loan-form">＋ <span>Create loan</span></button>
+          </div>
+        </header>
+
+        <div class="groups-feedback" id="loans-feedback" role="status" aria-live="polite" hidden></div>
+
+        <section class="groups-table-section" aria-labelledby="loan-register-title">
+          <div class="groups-table-heading loan-table-heading">
+            <div>
+              <p class="eyebrow">LOAN REGISTER</p>
+              <h2 id="loan-register-title">All loans</h2>
+            </div>
+            <div class="loan-filters">
+              <label class="form-field loan-filter-field" for="loan-group-filter">
+                <span>Group</span>
+                <select id="loan-group-filter" aria-label="Filter loans by group">
+                  <option value="all">All groups</option>
+                </select>
+              </label>
+              <label class="form-field loan-filter-field" for="loan-member-filter">
+                <span>Member</span>
+                <select id="loan-member-filter" aria-label="Filter loans by member">
+                  <option value="all">All members</option>
+                </select>
+              </label>
+              <span class="groups-count" id="loans-count">Loading</span>
+            </div>
+          </div>
+          <div class="groups-table-scroll">
+            <table class="groups-table loans-table">
+              <thead>
+                <tr><th scope="col">Member</th><th scope="col">Group</th><th scope="col">Loan amount</th><th scope="col">Loan date</th><th scope="col">Status</th><th scope="col">Loan ID</th></tr>
+              </thead>
+              <tbody id="loans-rows">
+                <tr><td colspan="6" class="table-message">Loading loans…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+
+      <section class="groups-page repayments-page" id="repayments-page" aria-labelledby="repayments-title" hidden>
+        <header class="groups-header">
+          <div>
+            <p class="eyebrow">SAVINGS NETWORK</p>
+            <h1 id="repayments-title">Repayments</h1>
+            <p class="groups-subtitle">Review repayment history by loan.</p>
+          </div>
+          <div class="groups-tools">
+            <button class="icon-button" type="button" id="refresh-repayments" aria-label="Refresh repayments" title="Refresh repayments">
+              <span aria-hidden="true">⟳</span>
+            </button>
+            <button class="button button-primary" type="button" id="open-repayment-form">＋ <span>Record repayment</span></button>
+          </div>
+        </header>
+
+        <div class="groups-feedback" id="repayments-feedback" role="status" aria-live="polite" hidden></div>
+
+        <section class="groups-table-section repayment-history-section" aria-labelledby="repayment-history-title">
+          <div class="groups-table-heading repayment-table-heading">
+            <div>
+              <p class="eyebrow">PAYMENT LEDGER</p>
+              <h2 id="repayment-history-title">Repayment history</h2>
+            </div>
+            <div class="repayment-filter-tools">
+              <label class="form-field repayment-filter-field" for="repayment-loan-filter">
+                <span>Loan</span>
+                <select id="repayment-loan-filter" aria-label="Filter repayments by loan">
+                  <option value="all">All loans</option>
+                </select>
+              </label>
+              <span class="groups-count" id="repayments-count">Loading</span>
+            </div>
+          </div>
+          <div class="repayment-selected-loan" id="repayment-selected-loan" hidden aria-live="polite"></div>
+          <div class="groups-table-scroll">
+            <table class="groups-table repayments-table">
+              <thead>
+                <tr><th scope="col">Repayment date</th><th scope="col">Member</th><th scope="col">Group</th><th scope="col">Loan ID</th><th scope="col">Repayment ID</th><th scope="col">Amount</th></tr>
+              </thead>
+              <tbody id="repayments-rows">
+                <tr><td colspan="6" class="table-message">Loading repayments…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </section>
     </main>
   </div>
 
-  <dialog class="form-dialog" id="action-dialog" aria-labelledby="dialog-title">
-    <form id="action-form">
+  <dialog class="form-dialog" id="group-create-dialog" aria-labelledby="group-create-title">
+    <form id="group-create-form">
       <div class="dialog-heading">
         <div>
-          <p class="eyebrow" id="dialog-eyebrow">MICROSAVE</p>
-          <h2 id="dialog-title">Add record</h2>
+          <p class="eyebrow">SAVINGS NETWORK</p>
+          <h2 id="group-create-title">Create a group</h2>
         </div>
-        <button class="icon-button close-button" type="button" id="close-dialog" aria-label="Close dialog">×</button>
+        <button class="icon-button close-button" type="button" id="close-group-create" aria-label="Close dialog">×</button>
       </div>
-      <div class="form-fields" id="form-fields"></div>
-      <p class="form-error" id="form-error" role="alert" hidden></p>
+      <div class="form-fields">
+        <div class="form-field">
+          <label for="group-name">Group name</label>
+          <input id="group-name" name="groupName" type="text" autocomplete="organization" required>
+        </div>
+      </div>
+      <p class="form-error" id="group-create-error" role="alert" hidden></p>
       <div class="dialog-actions">
-        <button class="button button-quiet" type="button" id="cancel-dialog">Cancel</button>
-        <button class="button button-primary" type="submit" id="submit-dialog">Save record</button>
+        <button class="button button-quiet" type="button" id="cancel-group-create">Cancel</button>
+        <button class="button button-primary" type="submit" id="submit-group-create">Create group</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="form-dialog group-details-dialog" id="group-details-dialog" aria-labelledby="group-details-title">
+    <div class="group-details-content">
+      <div class="dialog-heading">
+        <div>
+          <p class="eyebrow">GROUP RECORD</p>
+          <h2 id="group-details-title">Group details</h2>
+        </div>
+        <button class="icon-button close-button" type="button" id="close-group-details" aria-label="Close details">×</button>
+      </div>
+      <dl class="group-detail-list" id="group-detail-list"></dl>
+    </div>
+  </dialog>
+
+  <dialog class="form-dialog" id="member-create-dialog" aria-labelledby="member-create-title">
+    <form id="member-create-form">
+      <div class="dialog-heading">
+        <div>
+          <p class="eyebrow">SAVINGS NETWORK</p>
+          <h2 id="member-create-title">Add a member</h2>
+        </div>
+        <button class="icon-button close-button" type="button" id="close-member-create" aria-label="Close dialog">×</button>
+      </div>
+      <div class="form-fields">
+        <div class="form-field">
+          <label for="member-create-group">Savings group</label>
+          <select id="member-create-group" name="groupId" required>
+            <option value="">Choose a group</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label for="member-name">Member name</label>
+          <input id="member-name" name="memberName" type="text" autocomplete="name" required>
+        </div>
+      </div>
+      <p class="form-error" id="member-create-error" role="alert" hidden></p>
+      <div class="dialog-actions">
+        <button class="button button-quiet" type="button" id="cancel-member-create">Cancel</button>
+        <button class="button button-primary" type="submit" id="submit-member-create">Add member</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="form-dialog group-details-dialog" id="member-details-dialog" aria-labelledby="member-details-title">
+    <div class="group-details-content">
+      <div class="dialog-heading">
+        <div>
+          <p class="eyebrow">MEMBER RECORD</p>
+          <h2 id="member-details-title">Member details</h2>
+        </div>
+        <button class="icon-button close-button" type="button" id="close-member-details" aria-label="Close details">×</button>
+      </div>
+      <dl class="group-detail-list" id="member-detail-list"></dl>
+    </div>
+  </dialog>
+
+  <dialog class="form-dialog" id="contribution-create-dialog" aria-labelledby="contribution-create-title">
+    <form id="contribution-create-form">
+      <div class="dialog-heading">
+        <div>
+          <p class="eyebrow">SAVINGS LEDGER</p>
+          <h2 id="contribution-create-title">Record a contribution</h2>
+        </div>
+        <button class="icon-button close-button" type="button" id="close-contribution-create" aria-label="Close dialog">×</button>
+      </div>
+      <div class="form-fields">
+        <div class="form-field">
+          <label for="contribution-member">Member</label>
+          <select id="contribution-member" name="memberId" required>
+            <option value="">Loading members…</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label for="contribution-amount">Amount (INR)</label>
+          <input id="contribution-amount" name="amount" type="number" min="0" step="any" inputmode="decimal" required>
+        </div>
+        <div class="form-field">
+          <label for="contribution-date">Contribution date</label>
+          <input id="contribution-date" name="contributionDate" type="date" required>
+        </div>
+      </div>
+      <p class="form-error" id="contribution-create-error" role="alert" hidden></p>
+      <div class="dialog-actions">
+        <button class="button button-quiet" type="button" id="cancel-contribution-create">Cancel</button>
+        <button class="button button-primary" type="submit" id="submit-contribution-create">Record contribution</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="form-dialog" id="loan-create-dialog" aria-labelledby="loan-create-title">
+    <form id="loan-create-form">
+      <div class="dialog-heading">
+        <div>
+          <p class="eyebrow">LOAN REGISTER</p>
+          <h2 id="loan-create-title">Create a loan</h2>
+        </div>
+        <button class="icon-button close-button" type="button" id="close-loan-create" aria-label="Close dialog">×</button>
+      </div>
+      <div class="form-fields">
+        <div class="form-field">
+          <label for="loan-create-group">Savings group</label>
+          <select id="loan-create-group" name="groupId" required>
+            <option value="">Choose a group</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label for="loan-create-member">Member</label>
+          <select id="loan-create-member" name="memberId" required disabled>
+            <option value="">Choose a group first</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label for="loan-amount">Loan amount (INR)</label>
+          <input id="loan-amount" name="amount" type="number" min="0" step="any" inputmode="decimal" required>
+        </div>
+        <div class="form-field">
+          <label for="loan-date">Loan date</label>
+          <input id="loan-date" name="loanDate" type="date" required>
+        </div>
+      </div>
+      <p class="form-error" id="loan-create-error" role="alert" hidden></p>
+      <div class="dialog-actions">
+        <button class="button button-quiet" type="button" id="cancel-loan-create">Cancel</button>
+        <button class="button button-primary" type="submit" id="submit-loan-create">Create loan</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="form-dialog" id="repayment-create-dialog" aria-labelledby="repayment-create-title">
+    <form id="repayment-create-form">
+      <div class="dialog-heading">
+        <div>
+          <p class="eyebrow">PAYMENT LEDGER</p>
+          <h2 id="repayment-create-title">Record a repayment</h2>
+        </div>
+        <button class="icon-button close-button" type="button" id="close-repayment-create" aria-label="Close dialog">×</button>
+      </div>
+      <div class="form-fields">
+        <div class="form-field">
+          <label for="repayment-create-loan">Loan</label>
+          <select id="repayment-create-loan" name="loanId" required>
+            <option value="">Loading loans…</option>
+          </select>
+        </div>
+        <dl class="repayment-loan-context" id="repayment-loan-context" hidden></dl>
+        <div class="form-field">
+          <label for="repayment-amount">Repayment amount (INR)</label>
+          <input id="repayment-amount" name="amount" type="number" min="0" step="any" inputmode="decimal" required>
+        </div>
+        <div class="form-field">
+          <label for="repayment-date">Repayment date</label>
+          <input id="repayment-date" name="repaymentDate" type="date" required>
+        </div>
+      </div>
+      <p class="form-error" id="repayment-create-error" role="alert" hidden></p>
+      <div class="dialog-actions">
+        <button class="button button-quiet" type="button" id="cancel-repayment-create">Cancel</button>
+        <button class="button button-primary" type="submit" id="submit-repayment-create">Record repayment</button>
       </div>
     </form>
   </dialog>
