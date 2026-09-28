@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f4f6f2">
+  <title>MicroSave | Dashboard</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <script type="module" src="/js/app.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Main navigation">
+      <a class="brand" href="#dashboard" aria-label="MicroSave dashboard home">
+        <span class="brand-mark" aria-hidden="true">m</span>
+        <span class="brand-name">MicroSave</span>
+      </a>
+      <nav class="main-nav">
+        <a class="nav-link is-active" href="#dashboard" aria-current="page">
+          <span class="nav-icon" aria-hidden="true">⌂</span> Dashboard
+        </a>
+        <a class="nav-link" href="#groups" data-action="add-group"><span class="nav-icon" aria-hidden="true">▤</span> Groups</a>
+        <a class="nav-link" href="#members" data-action="add-member"><span class="nav-icon" aria-hidden="true">♙</span> Members</a>
+        <a class="nav-link" href="#contributions" data-action="add-contribution"><span class="nav-icon" aria-hidden="true">＋</span> Contributions</a>
+        <a class="nav-link" href="#loans" data-action="create-loan"><span class="nav-icon" aria-hidden="true">↗</span> Loans</a>
+        <a class="nav-link" href="#repayments" data-action="record-repayment"><span class="nav-icon" aria-hidden="true">↙</span> Repayments</a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <span class="connection-indicator" id="connection-indicator" aria-hidden="true"></span>
+        <span id="connection-label">Connecting to API</span>
+      </div>
+    </aside>
+
+    <main class="main-content" id="dashboard">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">SELF-HELP GROUP MANAGEMENT</p>
+          <h1>Dashboard</h1>
+          <p class="topbar-subtitle">Self-Help Group Savings &amp; Loan Management</p>
+        </div>
+        <div class="topbar-tools">
+          <span class="topbar-date" id="today-date" aria-label="Today's date"></span>
+          <button class="icon-button" type="button" id="refresh-dashboard" aria-label="Refresh dashboard" title="Refresh dashboard">
+            <span aria-hidden="true">⟳</span>
+          </button>
+        </div>
+      </header>
+
+      <section class="welcome-row" aria-labelledby="welcome-title">
+        <div>
+          <p class="eyebrow">COMMUNITY FINANCE</p>
+          <h2 id="welcome-title">Small savings. Shared progress.</h2>
+          <p class="welcome-copy">A clear view of your groups, member savings and loans.</p>
+        </div>
+        <div class="welcome-meta">
+          <span class="welcome-meta-label">TODAY</span>
+          <strong id="welcome-date">--</strong>
+        </div>
+      </section>
+
+      <section class="summary-section" aria-labelledby="summary-title">
+        <div class="section-heading compact-heading">
+          <div>
+            <p class="eyebrow">AT A GLANCE</p>
+            <h2 id="summary-title">Group overview</h2>
+          </div>
+          <span class="updated-label" id="summary-updated">Loading live data</span>
+        </div>
+        <div class="summary-grid">
+          <article class="summary-item" data-card="groups">
+            <div class="summary-heading"><span class="summary-icon green" aria-hidden="true">▤</span><span>Total groups</span></div>
+            <p class="summary-value" data-summary="groups">--</p>
+            <p class="summary-note">Registered savings groups</p>
+          </article>
+          <article class="summary-item" data-card="members">
+            <div class="summary-heading"><span class="summary-icon blue" aria-hidden="true">♙</span><span>Total members</span></div>
+            <p class="summary-value" data-summary="members">--</p>
+            <p class="summary-note">Across all groups</p>
+          </article>
+          <article class="summary-item" data-card="savings">
+            <div class="summary-heading"><span class="summary-icon amber" aria-hidden="true">＋</span><span>Total savings</span></div>
+            <p class="summary-value money-value" data-summary="savings">--</p>
+            <p class="summary-note">Recorded contributions</p>
+          </article>
+          <article class="summary-item" data-card="outstanding">
+            <div class="summary-heading"><span class="summary-icon coral" aria-hidden="true">↗</span><span>Outstanding loans</span></div>
+            <p class="summary-value money-value" data-summary="outstanding">--</p>
+            <p class="summary-note">Remaining balances</p>
+          </article>
+          <article class="summary-item pool-card" data-card="pool">
+            <div class="summary-heading"><span class="summary-icon teal" aria-hidden="true">◉</span><span>Available group pool</span></div>
+            <p class="summary-value money-value" data-summary="pool">--</p>
+            <p class="summary-note">Savings minus outstanding loans</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="quick-section" aria-labelledby="quick-title">
+        <div class="section-heading compact-heading">
+          <div>
+            <p class="eyebrow">COMMON TASKS</p>
+            <h2 id="quick-title">Quick actions</h2>
+          </div>
+        </div>
+        <div class="action-grid">
+          <button class="action-button" type="button" data-action="add-group"><span class="action-icon green" aria-hidden="true">＋</span><span>Add group</span><span class="action-arrow" aria-hidden="true">↗</span></button>
+          <button class="action-button" type="button" data-action="add-member"><span class="action-icon blue" aria-hidden="true">♙</span><span>Add member</span><span class="action-arrow" aria-hidden="true">↗</span></button>
+          <button class="action-button" type="button" data-action="add-contribution"><span class="action-icon amber" aria-hidden="true">＋</span><span>Add contribution</span><span class="action-arrow" aria-hidden="true">↗</span></button>
+          <button class="action-button" type="button" data-action="create-loan"><span class="action-icon coral" aria-hidden="true">↗</span><span>Create loan</span><span class="action-arrow" aria-hidden="true">↗</span></button>
+          <button class="action-button" type="button" data-action="record-repayment"><span class="action-icon teal" aria-hidden="true">↙</span><span>Record repayment</span><span class="action-arrow" aria-hidden="true">↗</span></button>
+        </div>
+      </section>
+
+      <section class="activity-section" aria-labelledby="activity-title">
+        <div class="section-heading activity-heading">
+          <div>
+            <p class="eyebrow">LATEST UPDATES</p>
+            <h2 id="activity-title">Recent activity</h2>
+          </div>
+          <span class="activity-count" id="activity-count">0 records</span>
+        </div>
+        <div class="activity-list" id="activity-list" aria-live="polite">
+          <div class="empty-state" id="activity-empty">
+            <span class="empty-mark" aria-hidden="true">⌁</span>
+            <h3>Loading activity</h3>
+            <p>Recent contributions, loans and repayments will appear here.</p>
+          </div>
+        </div>
+      </section>
+
+      <div class="notice" id="dashboard-notice" role="status" aria-live="polite" hidden></div>
+    </main>
+  </div>
+
+  <dialog class="form-dialog" id="action-dialog" aria-labelledby="dialog-title">
+    <form id="action-form">
+      <div class="dialog-heading">
+        <div>
+          <p class="eyebrow" id="dialog-eyebrow">MICROSAVE</p>
+          <h2 id="dialog-title">Add record</h2>
+        </div>
+        <button class="icon-button close-button" type="button" id="close-dialog" aria-label="Close dialog">×</button>
+      </div>
+      <div class="form-fields" id="form-fields"></div>
+      <p class="form-error" id="form-error" role="alert" hidden></p>
+      <div class="dialog-actions">
+        <button class="button button-quiet" type="button" id="cancel-dialog">Cancel</button>
+        <button class="button button-primary" type="submit" id="submit-dialog">Save record</button>
+      </div>
+    </form>
+  </dialog>
+</body>
+</html>
